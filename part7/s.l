@@ -173,21 +173,43 @@
 	)
 )
 
-(defun simplify-not (x)
+;(defun simplify-not (x)
 	;simplifies not expression
-	(cond ((equal '(not nil) x) t) ;not nil gets simplified to t
-          ((equal '(not t) x) nil) ;not t gets simplified to nil
-          ((null x) nil) ;end of list
-          ((atom x) x) ;atom: return itself
-          ((equal 'not (car x)) (cond ((equal '(t) (simplify-not (cdr x))) nil)
-                                      ((equal '(nil) (simplify-not (cdr x)))t)
-                                      (t (cons (car x) (simplify-not (cdr x))))
-                                )
-          )
-          ((atom (car x)) (cons (car x) (simplify-not (cdr x)))) 
-          (t (cons (simplify-not (car x)) (simplify-not(cdr x))));car is a list
+;	(cond ((equal '(not nil) x) t) ;not nil gets simplified to t
+;          ((equal '(not t) x) nil) ;not t gets simplified to nil
+;          ((null x) nil) ;end of list
+;          ((atom x) x) ;atom: return itself
+;          ((equal 'not (car x)) (cond ((equal '(t) (simplify-not (cdr x))) nil)
+;                                      ((equal '(nil) (simplify-not (cdr x)))t)
+;                                      (t (cons (car x) (simplify-not (cdr x))))
+;                                )
+;          )
+;          ((atom (car x)) (cons (car x) (simplify-not (cdr x)))) 
+;          (t (cons (simplify-not (car x)) (simplify-not(cdr x))));car is a list
+
+;	)
+;)
+(defun sim (x)
+	(cond ((null x) nil)
+		  ((equal '(not nil) x) t)
+		  ((equal '(not t) x) nil)
+		  ((atom (car x)) (cons (car x) (sim (cdr x)))) 
+		  (t (cons (simplify-not (car x)) (sim (cdr x))))
+	)
+)
+(defun simplify-not (x)
+	(cond ((atom x) x)
+		  (t (cond ((equal 'not (car x)) ( cond ((equal '(t) (sim (cdr x))) nil)
+		  										((equal '(nil) (sim (cdr x))) t)
+		  										(t (sim x))
+		  								 )
+		  		   ) 
+		  
+		  
+		  		   (t(mapcar #'simplify-not x))
+		  	 )
+		  )
 
 	)
 )
-
 
