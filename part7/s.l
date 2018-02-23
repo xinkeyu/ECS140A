@@ -175,11 +175,19 @@
 
 (defun simplify-not (x)
 	;simplifies not expression
-	(cond ;((not (listp x))x) ;if not a list, return itself
-		  ((equal '(not t) x) nil)
-		  ((equal '(not nil) x ) (list t))
-		  ((null x) nil)
-		  ((atom x) x)
-		  (t (append (list (simplify-not (car x))) (simplify-not (cdr x))) )
+	(cond ((equal '(not nil) x) t) ;not nil gets simplified to t
+          ((equal '(not t) x) nil) ;not t gets simplified to nil
+          ((null x) nil) ;end of list
+          ((atom x) x) ;atom: return itself
+          ((equal 'not (car x)) (cond ((equal '(t) (simplify-not (cdr x))) nil)
+                                      ((equal '(nil) (simplify-not (cdr x)))t)
+                                      (t (cons (car x) (simplify-not (cdr x))))
+                                )
+          )
+          ((atom (car x)) (cons (car x) (simplify-not (cdr x)))) 
+          (t (cons (simplify-not (car x)) (simplify-not(cdr x))));car is a list
+
 	)
 )
+
+
