@@ -173,54 +173,86 @@
 	)
 )
 
+(defun sim (x) ;helper function for not
+	(cond ((null x) nil)
+		  ((equal '(not nil) x) t)
+		  ((equal '(not t) x) nil)
+		  ((atom (car x)) (cons (car x) (sim (cdr x)))) 
+		  (t (cons (simplify-not (car x)) (sim (cdr x))))
+	)
+)
 (defun simplify-not (x)
-	;simplifies not expression
-	(cond ((equal '(not nil) x) t) ;not nil gets simplified to t
-          ((equal '(not t) x) nil) ;not t gets simplified to nil
-          ((null x) nil) ;end of list
-          ((atom x) x) ;atom: return itself
-          ((equal 'not (car x)) (cond ((equal '(t) (simplify-not (cdr x))) nil)
-                                      ((equal '(nil) (simplify-not (cdr x)))t)
-                                      (t (cons (car x) (simplify-not (cdr x))))
-                                )
-          )
-          ((atom (car x)) (cons (car x) (simplify-not (cdr x)))) 
-          (t (cons (simplify-not (car x)) (simplify-not(cdr x))));car is a list
+	(cond ((atom x) x)
+		  (t (cond ((equal 'not (car x)) ( cond ((equal '(t) (sim (cdr x))) nil) 
+		  										((equal '(nil) (sim (cdr x))) t)
+		  										(t (sim x))
+		  								 )
+		  		   ) 
+		  
+		  
+		  		   (t(mapcar #'simplify-not x))
+		  	 )
+		  )
 
 	)
 )
 
-(defun orSim (x)
-    (cond ((null (cdr x)) nil)
-          ((isLL2 x) (cadr x))
+
+(defun orSim (x) ;simplify or
+    (cond ((null x) nil)
+    	  ((and (null (cdr x)) (equal 'or (car x))) nil)
+          ((and(isLL2 x) (equal 'or (car x))) (simplify(cadr x)))
           ((member t x) t)
-          (t x)
+          ((atom (car x)) (cons (car x) (simplify (cdr x))))
+          (t (cons (simplify (car x)) (simplify(cdr x)))) ;car of x is a list
     )                                                             
 )
-(defun andSim (x)
-    (cond ((null (cdr x)) t)
-          ((isLL2 x) (cadr x))
+(defun andSim (x) ;simplify and
+    (cond ((null x) nil)
+    	  ((and(null (cdr x)) (equal 'and (car x))) t)
+          ((and(isLL2 x) (equal 'and (car x)) ) (simplify(cadr x)))
           ((member 'nil x)nil)
-          (t x)
+          ((atom (car x)) (cons (car x) (simplify (cdr x))))
+          (t (cons (simplify (car x)) (simplify(cdr x)))) ;car of x is a list
     )
 )
 
-(defun simplify (x)
-    ;simplify and, or
-
-    (cond ((equal '(not nil) x) t) ;not nil gets simplified to t
-          ((equal '(not t) x) nil) ;not t gets simplified to nil
-          ((null x) nil) ;end of list
-          ((atom x) x) ;atom: return itself
-          ((equal 'not (car x)) (cond ((equal '(t) (simplify-not (cdr x))) nil)
-                                      ((equal '(nil) (simplify-not (cdr x)))t)
-                                      (t (cons (car x) (simplify-not (cdr x))))
-                                )
+(defun furthersim (x) ;helps simplify nested or, and
+    (cond ((null x) nil)
+          ((atom x)x)
+          (t (cond ((equal 'or (car x)) (orSim (remove 'nil x)))
+                   ((equal 'and (car x)) (andSim (remove 't x)))
+                   (t x)
+             )           
           )
-          ((equal 'or (car x)) (orSim (remove 'nil x)))
-          ((equal 'and (car x)) (andSim (remove 't x)))
-          ((atom (car x)) (cons (car x) (simplify-not (cdr x)))) 
-          (t (cons (simplify-not (car x)) (simplify-not(cdr x))));car is a list
+    )
+)
+
+(defun simThis (x) ;helper function for not (for part8)
+	(cond ((null x) nil)
+		  ((equal '(not nil) x) t) 
+		  ((equal '(not t) x) nil)
+		  ((atom (car x)) (cons (car x) (sim (cdr x)))) 
+		  (t (cons (simplify (car x)) (sim (cdr x))))
+	)
+)
+
+(defun simplify (x) ;simplify and, or, not
+	(cond ((atom x) x)
+		  (t (cond ((equal 'not (car x)) ( cond ((equal '(t) (simThis (cdr x))) nil) 
+		  										((equal '(nil) (simThis (cdr x))) t)
+		  										(t (simThis x))
+		  								 )
+		  		   ) 
+		           ((equal 'or (car x)) (furthersim(orSim (remove 'nil x)))
+
+                   )
+		           ((equal 'and (car x)) (furthersim(andSim (remove 't x)))
+
+                   )		     
+		  		   (t (mapcar #'simplify x))
+		  	 )
+		  )
 
 	)
 )
