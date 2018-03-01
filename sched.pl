@@ -217,3 +217,15 @@ fitany([H|T],MemList,NewMemList):-
 	fitany(T,NewMemList1,NewMemList).
 
 %%%%%%%%%%PART EIGHT%%%%%%%%%%
+
+fit1stTryHarder(RRList,MemList,NewRRList,NewMemList):- %try different permutations of RRList
+	\+fit1st(RRList, MemList, NewMemList), %if fit1st succeeds, fail
+	permsub(RRList,NewRRList),
+	fit1st(NewRRList,MemList, NewMemList).
+
+fitanyTryHarder(RRList,MemList,NewRRList,NewMemList):- %similar to above, use fitany
+	\+fitany(RRList, MemList, NewMemList), %if fitany succeeds, fail
+	permsub(RRList,NewRRList),
+	fitany(NewRRList,MemList, NewMemList).
+		
+	
